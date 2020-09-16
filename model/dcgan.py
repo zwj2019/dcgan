@@ -8,31 +8,28 @@ from model.basic_model import Generator, Discriminator
 
 class DCGAN(pl.LightningModule):
 
-    def __init__(self, ngpu, g_lr, d_lr, nz, nc, ndf, ngf, beta1):
+    def __init__(self, args):
         super().__init__()
-        self.ngpu = ngpu
-        self.g_lr = g_lr
-        self.d_lr = d_lr
-        self.nz = nz
-        self.nc = nc
-        self.ngf = ngf
-        self.ndf = ndf
-        self.beta1 = beta1
 
-        self.save_hyperparameters()
+        self.device = 'cpu'
+        if args.gpus > 0:
+            assert torch.cuda.is_available()
+            self.device = 'cuda'
 
-        self.generator = init_generator()
-        self.discriminator = init_discriminator()
+        self.generator = self.init_generator()
+        self.discriminator = self.init_discriminator()
 
 
     def init_generator(self):
-        generator = Generator(self.ngpu, self.nz, self.ngf)
-        generator.apply(weights_init)
+        generator = Generator(args.ngpu, args.nz, args.nc, args.ngf)
+        generator.apply(self.weights_init)
+        print(generator)
         return generator
     
     def init_discriminator(self):
-        discriminator = Discriminator(self.ngpu, self.nz, self.ngf)
-        discriminator.apply(weights_init)
+        discriminator = Discriminator(args.ngpu, args.nz, args.ngf)
+        discriminator.apply(self.weights_init)
+        print(discriminator)
         return discriminator
 
     # custom weights initialization called on netG and netD
@@ -48,7 +45,7 @@ class DCGAN(pl.LightningModule):
         return self.generator(z)
     
     def generator_loss(self, b_size):
-        noise = torch.randn(b_size, self.nz, 1, 1, device=self.device)
+        noise = torch.randn(b_size, args.nz, 1, 1, device=self.device)
         label = torch.ones((b_size,), device=self.device)
 
         fake = self.generator(noise)
@@ -68,7 +65,7 @@ class DCGAN(pl.LightningModule):
         real_loss = criterion(output, real_label)
 
         # forward pass fake batch throgh D
-        noise = torch.randn(b_size, nz, 1, 1, device=self.device)
+        noise = torch.randn(b_size, args.nz, 1, 1, device=self.device)
         fake = self.generator(noise)
         fake_loss = criterion(output, fake_label)
 
@@ -102,8 +99,8 @@ class DCGAN(pl.LightningModule):
         return result
 
     def configure_optimizers(self):
-        lr = self.hparams.lr
-        beta1 = self.hparams.beta1
+        lr = args.lr
+        beta1 = args.beta1
 
         optimizerD = torch.optim.Adam(self.discriminator.parameters(), lr=lr, betas=(beta1, 0.999))
         optimizerG = torch.optim.Adam(self.discriminator.parameters(), lr=lr, betas=(beta1, 0.999))

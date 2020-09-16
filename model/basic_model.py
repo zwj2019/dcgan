@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class Generator(nn.Module):
-    def __init__(self, ngpu, nz, ngf):
+    def __init__(self, ngpu, nz, nc, ngf):
         super(Generator, self).__init__()
         self.ngpu = ngpu
         self.main = nn.Sequential(
