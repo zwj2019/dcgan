@@ -3,8 +3,9 @@ import argparse
 from pytorch_lightning import Trainer
 import sys
 print(sys.path)
+
 from model.dcgan import DCGAN
-from model.data_utils import FaceDataset
+from data_utils import FaceDataset
 
 
 def get_argparse():
