@@ -3,14 +3,19 @@ import argparse
 
 import torch
 from torchvision import datasets, transforms
+from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
 
 import pytorch_lightning as pl
 from model.basic_model import Generator, Discriminator
 
+
+# class SamplesEveryNstep
 class DCGAN(pl.LightningModule):
 
     def __init__(self, args):
         super().__init__()
+
         self.args = args
         self.d = 'cpu'
         if args.ngpu > 0:
@@ -33,7 +38,7 @@ class DCGAN(pl.LightningModule):
         print(discriminator)
         return discriminator
 
-    # custom weights initialization called on netG and netD
+    # custom weights initialization called on Generator and Discriminator
     def weights_init(self, m):
         classname = m.__class__.__name__
         if classname.find('Conv') != -1:
@@ -95,6 +100,30 @@ class DCGAN(pl.LightningModule):
         # train discriminator
         if optimizer_idx == 1:
             result = self.discriminator_step(x)
+
+
+        if (batch_idx % 500 == 0) or ((self.current_epoch == self.trainer.max_epochs) and 
+                    batch_idx == len(self.trainer.train_dataloader) - 1):
+                    output_path = self.args.output
+
+                    if not os.path.exists(output_path):
+                        os.makedirs(output_path)
+
+                    fake_iamge = None
+                    with torch.no_grad():
+                        random_noise = torch.randn(16, 100, 1, 1, device=self.d)
+                        fake_image = self.generator(random_noise).detach().cpu()
+                    
+                    assert not fake_image is None
+                    img_tensor_list = [tensor for tensor in fake_image]
+                    img_list = [img.numpy().transpose((1, 2, 0)) for img in img_tensor_list]
+                    plt.figure()
+                    for i in range(len(img_list)):
+                        plt.subplot(4, 4, i + 1)
+                        plt.imshow(img_list[i] * 0.5 + 0.5)
+                        plt.xticks([])
+                        plt.yticks([])
+                    plt.savefig(os.path.join(output_path, 'epoch-%d-batch_idx-%d.jpg' % (self.current_epoch, batch_idx)))
 
         return result
 
