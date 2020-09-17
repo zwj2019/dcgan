@@ -26,5 +26,9 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    trainer = Trainer.from_argparse_args(args)
+    trainer = Trainer(fast_dev_run=True, max_epochs=args.num_epochs, gpus=args.ngpu)
     model = DCGAN(args)
+
+    face_dataset = FaceDataset(args)
+    # debug
+    train.fit(model, face_dataset)
