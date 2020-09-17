@@ -60,3 +60,13 @@ class Discriminator(nn.Module):
 
     def forward(self, input):
         return self.main(input)
+
+
+if __name__ == '__main__':
+    x = torch.randn(128, 100, 1, 1)
+    g = Generator(1, 100, 3, 64)
+    d = Discriminator(1, 3, 64)
+    output = g(x)
+    d_output = d(output)
+    print(d_output.size())
+    print(output.size())

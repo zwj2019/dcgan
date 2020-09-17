@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 class FaceDataset(pl.LightningDataModule):
     def __init__(self, args):
         # dataroot, workers, batch_size, image_size
+        super().__init__()
         self.workers = args.workers
         self.batch_size = args.batch_size
 
