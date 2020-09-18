@@ -32,7 +32,7 @@ if __name__ == '__main__':
     model = DCGAN(args)
 
     face_dataset = FaceDataset(args)
-    print(type(face_dataset))
+    # print(type(face_dataset))
     # face_dataset.prepare_data()
     # debug
     trainer.fit(model, face_dataset)
