@@ -8,7 +8,7 @@ class Generator(nn.Module):
         self.ngpu = ngpu
         self.main = nn.Sequential(
             # input is Z, going into a convolution
-            nn.ConvTranspose2d( nz, ngf * 8, 4, 1, 0, bias=False),
+            nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(ngf * 8),
             nn.ReLU(True),
             # state size. (ngf*8) x 4 x 4
@@ -16,15 +16,15 @@ class Generator(nn.Module):
             nn.BatchNorm2d(ngf * 4),
             nn.ReLU(True),
             # state size. (ngf*4) x 8 x 8
-            nn.ConvTranspose2d( ngf * 4, ngf * 2, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf * 4, ngf * 2, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf * 2),
             nn.ReLU(True),
             # state size. (ngf*2) x 16 x 16
-            nn.ConvTranspose2d( ngf * 2, ngf, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf * 2, ngf, 4, 2, 1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(True),
             # state size. (ngf) x 32 x 32
-            nn.ConvTranspose2d( ngf, nc, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf, nc, 4, 2, 1, bias=False),
             nn.Tanh()
             # state size. (nc) x 64 x 64
         )
@@ -62,11 +62,59 @@ class Discriminator(nn.Module):
         return self.main(input)
 
 
+class Self_Attn(nn.Module):
+    """ Self attention Layer"""
+
+    def __init__(self, in_dim):
+        super(Self_Attn, self).__init__()
+        self.chanel_in = in_dim
+
+        self.query_conv = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.key_conv = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.value_conv = nn.Conv2d(in_channels=in_dim, out_channels=in_dim, kernel_size=1)
+        self.gamma = nn.Parameter(torch.zeros(1))
+
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        """
+            inputs :
+                x : input feature maps( B X C X W X H)
+            returns :
+                out : self attention value + input feature 
+                attention: B X N X N (N is Width*Height)
+        """
+        m_batchsize, C, width, height = x.size()
+        proj_query = self.query_conv(x).view(m_batchsize, -1, width * height).permute(0, 2, 1)  # B X CX(N)
+        print('proj_query:', proj_query.size())
+        proj_key = self.key_conv(x).view(m_batchsize, -1, width * height)  # B X C x (*W*H)
+        print('proj_key:', proj_key.size())
+        energy = torch.bmm(proj_query, proj_key)  # transpose check
+        print('energy:', energy.size())
+        attention = self.softmax(energy)  # BX (N) X (N)
+        print('attention:', attention.size())
+        proj_value = self.value_conv(x).view(m_batchsize, -1, width * height)  # B X C X N
+        print('proj_value:', proj_value.size())
+        out = torch.bmm(proj_value, attention.permute(0, 2, 1))
+        print('out:', out.size())
+        out = out.view(m_batchsize, C, width, height)
+
+        out = self.gamma * out + x
+        return out, attention
+
+
 if __name__ == '__main__':
-    x = torch.randn(128, 100, 1, 1)
-    g = Generator(1, 100, 3, 64)
-    d = Discriminator(1, 3, 64)
-    output = g(x)
-    d_output = d(output)
-    print(d_output.size())
-    print(output.size())
+    # Test Generator and Discriminator
+    # x = torch.randn(128, 100, 1, 1)
+    # g = Generator(1, 100, 3, 64)
+    # d = Discriminator(1, 3, 64)
+    # output = g(x)
+    # d_output = d(output)
+    # print(d_output.size())
+    # print(output.size())
+
+    # Test self-attention
+    atte = Self_Attn(512)
+    x = torch.randn(13, 512, 4, 4)
+    o, a = atte(x)
+    print(o.size(), a.size())
