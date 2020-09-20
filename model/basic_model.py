@@ -86,21 +86,37 @@ class Self_Attn(nn.Module):
         """
         m_batchsize, C, width, height = x.size()
         proj_query = self.query_conv(x).view(m_batchsize, -1, width * height).permute(0, 2, 1)  # B X CX(N)
-        print('proj_query:', proj_query.size())
         proj_key = self.key_conv(x).view(m_batchsize, -1, width * height)  # B X C x (*W*H)
-        print('proj_key:', proj_key.size())
         energy = torch.bmm(proj_query, proj_key)  # transpose check
-        print('energy:', energy.size())
         attention = self.softmax(energy)  # BX (N) X (N)
-        print('attention:', attention.size())
+
         proj_value = self.value_conv(x).view(m_batchsize, -1, width * height)  # B X C X N
-        print('proj_value:', proj_value.size())
-        out = torch.bmm(proj_value, attention.permute(0, 2, 1))
-        print('out:', out.size())
+        out = torch.bmm(proj_value, attention)
         out = out.view(m_batchsize, C, width, height)
 
         out = self.gamma * out + x
         return out, attention
+
+
+class SelfAttention2(nn.Module):
+    
+    def __init__(self, in_dim):
+        super(SelfAttention2, self).__init__()
+        self.query = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.key = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 8, kernel_size=1)
+        self.value = nn.Conv2d(in_channels=in_dim, out_channels=in_dim // 2, kernel_size=1)
+
+        self.max_pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.max_pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+
+        self.gamma = nn.Parameter(torch.zeros(1))
+        self.softmax = nn.Softmax(dim=-1)
+    
+    def forward(self, x):
+        q = self.query(x)
+        k = self.key(x)
+
+
 
 
 if __name__ == '__main__':
