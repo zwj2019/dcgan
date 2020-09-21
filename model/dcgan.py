@@ -131,7 +131,7 @@ class DCGAN(pl.LightningModule):
         beta1 = self.args.beta1
 
         optimizerD = torch.optim.Adam(self.discriminator.parameters(), lr=self.args.d_lr, betas=(beta1, 0.999))
-        optimizerG = torch.optim.Adam(self.discriminator.parameters(), lr=self.args.g_lr, betas=(beta1, 0.999))
+        optimizerG = torch.optim.Adam(self.generator.parameters(), lr=self.args.g_lr, betas=(beta1, 0.999))
         return [optimizerD, optimizerG], []
 
     @staticmethod

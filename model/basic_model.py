@@ -111,12 +111,37 @@ class SelfAttention2(nn.Module):
 
         self.gamma = nn.Parameter(torch.zeros(1))
         self.softmax = nn.Softmax(dim=-1)
+        self.output = nn.Conv2d(in_channels=in_dim // 2, out_channels=in_dim, kernel_size=1)
     
+    def flatten(self, x):
+        assert len(x.size()) == 4
+        B, C, W, H = x.size()
+        
+        x = x.view(B, -1, W * H)
+        return x
+
     def forward(self, x):
+        # x : B, C, W, H
+        B, C, W, H = x.size()
         q = self.query(x)
+        q = self.max_pool1(q)
+        q = self.flatten(q) # B, C//8, W * H / 4
+
         k = self.key(x)
+        k = self.flatten(k) # B, C//8, W * H
 
+        v = self.value(x)
+        v = self.max_pool2(v)
+        v = self.flatten(v) # B, C//2, W * H / 4
 
+        atte = torch.bmm(q.permute(0, 2, 1), k)
+        atte = self.softmax(atte) # B, W * H, W * H / 4
+
+        out = torch.bmm(v, atte)
+        out = out.view(B, -1, W, H)
+        out = self.output(out) # B, C//2, W * H
+        
+        return x + self.gamma * out
 
 
 if __name__ == '__main__':
@@ -130,7 +155,7 @@ if __name__ == '__main__':
     # print(output.size())
 
     # Test self-attention
-    atte = Self_Attn(512)
+    atte = SelfAttention2(512)
     x = torch.randn(13, 512, 4, 4)
-    o, a = atte(x)
-    print(o.size(), a.size())
+    o = atte(x)
+    print(o.size())
