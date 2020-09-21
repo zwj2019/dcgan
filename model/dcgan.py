@@ -95,12 +95,11 @@ class DCGAN(pl.LightningModule):
         # train generator
         result = None
         if optimizer_idx == 0:
-            result = self.generator_step(x.size(0))
-
+            result = self.discriminator_step(x)
+            
         # train discriminator
         if optimizer_idx == 1:
-            result = self.discriminator_step(x)
-
+            result = self.generator_step(x.size(0))
 
         if (batch_idx % 500 == 0) or ((self.current_epoch == self.trainer.max_epochs) and 
                     batch_idx == len(self.trainer.train_dataloader) - 1):

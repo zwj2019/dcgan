@@ -8,7 +8,7 @@ from data_utils import FaceDataset
 
 def get_argparse():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', help="Path to the root of the dataset folder", required=True, type=str)
+    parser.add_argument('--dataroot', help="Path to the root of the dataset folder", default='E:/222/SOCOFing/GAN/', type=str)
     parser.add_argument('--workers', help="Number of worker threads for loading the data with the DataLoader", type=int, default=0)
     parser.add_argument('--batch_size', help="Batch size used in training", type=int, default=128)
     parser.add_argument('--image_size', help="Spatial size of the images used for training", type=int, default=64)
