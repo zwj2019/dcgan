@@ -2,6 +2,7 @@ import os
 import argparse
 
 import torch
+from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
@@ -24,7 +25,7 @@ class DCGAN(pl.LightningModule):
 
         self.generator = self.init_generator()
         self.discriminator = self.init_discriminator()
-
+        self.fixed_noise = torch.randn(1, 100, 1, 1, device=self.d)
 
     def init_generator(self):
         generator = Generator(self.args.ngpu, self.args.nz, self.args.nc, self.args.ngf)
@@ -48,34 +49,39 @@ class DCGAN(pl.LightningModule):
             torch.nn.init.constant_(m.bias.data, 0)
     
     def forward(self, z):
+        # print('###############')
         return self.generator(z)
     
     def generator_loss(self, b_size):
         noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.d)
-        label = torch.ones((b_size,), device=self.d)
+        label = torch.ones((b_size,), dtype=torch.float, device=self.d)
 
-        fake = self.generator(noise)
+        fake = self(noise)
         output = self.discriminator(fake).view(-1)
-        loss = torch.nn.BCELoss()(output, label)
+        # loss = self.criterion(output, label)
+        loss = F.binary_cross_entropy(output, label)
         return loss
 
     def discriminator_loss(self, x):
         b_size = x.size(0)
-        real_label = torch.ones((b_size,), dtype=torch.float, device=self.d)
-        fake_label = torch.zeros((b_size,), dtype=torch.float, device=self.d)
-        criterion = torch.nn.BCELoss()
+        real_label = torch.ones((b_size, 1, 1, 1), dtype=torch.float, device=self.d)
+        fake_label = torch.zeros((b_size, 1, 1, 1), dtype=torch.float, device=self.d)
 
         # forward pass real batch through D
-        output = self.discriminator(x).view(-1)
-        real_loss = criterion(output, real_label)
+        output = self.discriminator(x)
+        # print(outpu)
+        real_loss = F.binary_cross_entropy(output, real_label)
 
         # forward pass fake batch throgh D
         noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.d)
-        fake = self.generator(noise)
-        
-        fake_loss = criterion(output, fake_label)
+        fake = self(noise)
+        output = self.discriminator(fake)
 
-        return real_loss, fake_loss
+        fake_loss = F.binary_cross_entropy(output, fake_label)
+        loss = real_loss + fake_loss
+        print(real_loss.grad_fn, fake_loss.grad_fn, loss.grad_fn)
+
+        return loss
     
     def generator_step(self, b_size):
         g_loss = self.generator_loss(b_size)
@@ -84,24 +90,24 @@ class DCGAN(pl.LightningModule):
         return result
     
     def discriminator_step(self, x):
-        d_real_loss, d_fake_loss = self.discriminator_loss(x)
-        d_loss = d_real_loss + d_fake_loss
+        d_loss = self.discriminator_loss(x)
+        # print(d_loss.grad_fn)
         result = pl.TrainResult(minimize=d_loss)
         result.log('d_loss', d_loss, on_epoch=True, prog_bar=True)
         return result
-    
+
     def training_step(self, batch, batch_idx, optimizer_idx):
         x, _ = batch
         # train generator
         result = None
+        
         if optimizer_idx == 0:
-            result = self.generator_step(x.size(0))
+            result = self.discriminator_step(x)
 
         # train discriminator
         if optimizer_idx == 1:
-            result = self.discriminator_step(x)
-
-
+            result = self.generator_step(x.size(0))
+            
         if (batch_idx % 500 == 0) or ((self.current_epoch == self.trainer.max_epochs) and 
                     batch_idx == len(self.trainer.train_dataloader) - 1):
                     output_path = self.args.output
