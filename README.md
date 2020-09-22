@@ -1,31 +1,15 @@
-  
-
-### DELETE EVERYTHING ABOVE FOR YOUR PROJECT  
- 
----
-
 <div align="center">    
  
-# DCGAN     
+# DCGAN: Unsupervised Representation Learning With Deep Convolutional Generative Adversarial Networks     
 
 [![Paper](https://img.shields.io/badge/paper-arxiv.1511.06434-brightgreen)](https://arxiv.org/pdf/1511.06434)
 [![Conference](https://img.shields.io/badge/Pytorch-DCGAN-orange)](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
 [![Conference](https://img.shields.io/badge/Pytorch--Lightning-Homepage-blue)](https://pytorch-lightning.readthedocs.io/en/latest/)
-
-<!--
-ARXIV   
-[![Paper](http://img.shields.io/badge/arxiv-math.co:1480.1111-B31B1B.svg)](https://www.nature.com/articles/nature14539)
--->
-
-
-
-<!--  
-Conference   
--->   
+  
 </div>
  
 ## Description   
-This project implement DCGAN with [pytorch-lightning](https://github.com/PyTorchLightning/pytorch-lightning)   
+This project implement DCGAN with [pytorch-lightning](https://github.com/PyTorchLightning/pytorch-lightning).In Pytorch DCGAN tutorial, they use the [Cele-A Faces dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) for training, more details can be found in this [tutorial](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html) and [Goodfellow's paper](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf).
 
 ## How to run   
 First, install dependencies
@@ -41,9 +25,13 @@ pip install -r requirements.txt
 # module folder
 cd dcgan
 
-# run module   
-python main.py --dataroot='Your dataroot'
+# run module, get more arguments in main.py and model/dcgan.py   
+python main.py --dataroot=path/to/your/dataset
+
+# sample, get more arguments in sample.py
+python sample.py --weights=path/to/your/model/checkpoints
 ```
 ## TODO
-- [ ] Update requirements
-- [ ] Load weights from checkpoint
+- [x] Update requirements
+- [x] Load weights from checkpoint
+- [x] Complete sample.py

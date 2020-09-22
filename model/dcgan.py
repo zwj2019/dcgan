@@ -11,30 +11,23 @@ import pytorch_lightning as pl
 from model.basic_model import Generator, Discriminator
 
 
-# class SamplesEveryNstep
 class DCGAN(pl.LightningModule):
 
     def __init__(self, args):
         super().__init__()
-
+        self.save_hyperparameters()
         self.args = args
-        self.d = 'cpu'
-        if args.ngpu > 0:
-            assert torch.cuda.is_available()
-            self.d = 'cuda'
-
         self.generator = self.init_generator()
         self.discriminator = self.init_discriminator()
-        self.fixed_noise = torch.randn(1, 100, 1, 1, device=self.d)
 
     def init_generator(self):
-        generator = Generator(self.args.ngpu, self.args.nz, self.args.nc, self.args.ngf)
+        generator = Generator(self.args.nz, self.args.nc, self.args.ngf)
         generator.apply(self.weights_init)
         print(generator)
         return generator
     
     def init_discriminator(self):
-        discriminator = Discriminator(self.args.ngpu, self.args.nc, self.args.ngf)
+        discriminator = Discriminator(self.args.nc, self.args.ngf)
         discriminator.apply(self.weights_init)
         print(discriminator)
         return discriminator
@@ -49,39 +42,34 @@ class DCGAN(pl.LightningModule):
             torch.nn.init.constant_(m.bias.data, 0)
     
     def forward(self, z):
-        # print('###############')
         return self.generator(z)
     
     def generator_loss(self, b_size):
-        noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.d)
-        label = torch.ones((b_size,), dtype=torch.float, device=self.d)
+        noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.device)
+        label = torch.ones((b_size,), dtype=torch.float, device=self.device)
 
-        fake = self(noise)
+        fake = self.generator(noise)
         output = self.discriminator(fake).view(-1)
-        # loss = self.criterion(output, label)
         loss = F.binary_cross_entropy(output, label)
         return loss
 
     def discriminator_loss(self, x):
         b_size = x.size(0)
-        real_label = torch.ones((b_size, 1, 1, 1), dtype=torch.float, device=self.d)
-        fake_label = torch.zeros((b_size, 1, 1, 1), dtype=torch.float, device=self.d)
+        real_label = torch.ones((b_size,), dtype=torch.float, device=self.device)
+        fake_label = torch.zeros((b_size,), dtype=torch.float, device=self.device)
 
         # forward pass real batch through D
-        output = self.discriminator(x)
-        # print(outpu)
+        output = self.discriminator(x).view(-1)
         real_loss = F.binary_cross_entropy(output, real_label)
 
         # forward pass fake batch throgh D
-        noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.d)
-        fake = self(noise)
-        output = self.discriminator(fake)
+        noise = torch.randn(b_size, self.args.nz, 1, 1, device=self.device)
+        fake = self.generator(noise)
+        output = self.discriminator(fake).view(-1)
 
         fake_loss = F.binary_cross_entropy(output, fake_label)
-        loss = real_loss + fake_loss
-        print(real_loss.grad_fn, fake_loss.grad_fn, loss.grad_fn)
 
-        return loss
+        return real_loss, fake_loss
     
     def generator_step(self, b_size):
         g_loss = self.generator_loss(b_size)
@@ -90,8 +78,8 @@ class DCGAN(pl.LightningModule):
         return result
     
     def discriminator_step(self, x):
-        d_loss = self.discriminator_loss(x)
-        # print(d_loss.grad_fn)
+        d_real_loss, d_fake_loss = self.discriminator_loss(x)
+        d_loss = d_real_loss + d_fake_loss
         result = pl.TrainResult(minimize=d_loss)
         result.log('d_loss', d_loss, on_epoch=True, prog_bar=True)
         return result
@@ -103,11 +91,11 @@ class DCGAN(pl.LightningModule):
         
         if optimizer_idx == 0:
             result = self.discriminator_step(x)
-
         # train discriminator
         if optimizer_idx == 1:
             result = self.generator_step(x.size(0))
-            
+        
+        # Generate some sample images
         if (batch_idx % 500 == 0) or ((self.current_epoch == self.trainer.max_epochs) and 
                     batch_idx == len(self.trainer.train_dataloader) - 1):
                     output_path = self.args.output
@@ -117,7 +105,7 @@ class DCGAN(pl.LightningModule):
 
                     fake_iamge = None
                     with torch.no_grad():
-                        random_noise = torch.randn(16, 100, 1, 1, device=self.d)
+                        random_noise = torch.randn(16, 100, 1, 1, device=self.device)
                         fake_image = self.generator(random_noise).detach().cpu()
                     
                     assert not fake_image is None
