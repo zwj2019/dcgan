@@ -1,7 +1,6 @@
 import argparse
 import os
 
-import pytorch_lightning as pl
 import torch
 from PIL import Image
 import numpy as np
