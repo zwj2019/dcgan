@@ -9,7 +9,7 @@
 </div>
  
 ## Description   
-This project implement DCGAN with [pytorch-lightning](https://github.com/PyTorchLightning/pytorch-lightning).In Pytorch DCGAN tutorial, they use the [Cele-A Faces dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) for training, more details can be found in this [tutorial](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html) and [Goodfellow's paper](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf).
+This project implement DCGAN with [pytorch-lightning](https://github.com/PyTorchLightning/pytorch-lightning).In Pytorch DCGAN tutorial, they use the [Cele-A Faces dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) for training, more details can be found in the [tutorial](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html) and [Goodfellow's paper](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf).
 
 ## How to run   
 First, install dependencies
