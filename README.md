@@ -20,7 +20,7 @@ git clone https://github.com/zwj2019/dcgan.git
 # install requirements   
 pip install -r requirements.txt
  ```   
- Next, navigate to any file and run it.   
+ Next, navigate to main.py or sample.py, and run it.   
  ```bash
 # module folder
 cd dcgan
