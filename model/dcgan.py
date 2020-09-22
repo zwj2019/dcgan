@@ -74,11 +74,12 @@ class DCGAN(pl.LightningModule):
         fake = self.generator(noise)
         
         fake_loss = criterion(output, fake_label)
-
+        print(real_loss.grad_fn, fake_loss.grad_fn)
         return real_loss, fake_loss
     
     def generator_step(self, b_size):
         g_loss = self.generator_loss(b_size)
+        print(g_loss.grad_fn)
         result = pl.TrainResult(minimize=g_loss, checkpoint_on=g_loss)
         result.log('g_loss', g_loss, on_epoch=True, prog_bar=True)
         return result
@@ -86,6 +87,7 @@ class DCGAN(pl.LightningModule):
     def discriminator_step(self, x):
         d_real_loss, d_fake_loss = self.discriminator_loss(x)
         d_loss = d_real_loss + d_fake_loss
+        print(d_loss.grad_fn)
         result = pl.TrainResult(minimize=d_loss)
         result.log('d_loss', d_loss, on_epoch=True, prog_bar=True)
         return result

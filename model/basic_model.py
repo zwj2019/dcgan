@@ -37,60 +37,63 @@ class Discriminator(nn.Module):
     def __init__(self, ngpu, nc, ndf):
         super(Discriminator, self).__init__()
         self.ngpu = ngpu
-        self.c1 = nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-        self.lr1 = nn.LeakyReLU(0.2, inplace=True),
+        self.c1 = nn.Conv2d(nc, ndf, 4, 2, 1, bias=False)
+        self.lr1 = nn.LeakyReLU(0.2, inplace=True)
             # state size. (ndf) x 32 x 32
-        self.c2 = nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-        self.bn2 = nn.BatchNorm2d(ndf * 2),
-        self.lr2 = nn.LeakyReLU(0.2, inplace=True),
+        self.c2 = nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False)
+        self.bn2 = nn.BatchNorm2d(ndf * 2)
+        self.lr2 = nn.LeakyReLU(0.2, inplace=True)
             # state size. (ndf*2) x 16 x 16
-        self.c3 = nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-        self.bn3 = nn.BatchNorm2d(ndf * 4),
-        self.lr3 = nn.LeakyReLU(0.2, inplace=True),
+        self.c3 = nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False)
+        self.bn3 = nn.BatchNorm2d(ndf * 4)
+        self.lr3 = nn.LeakyReLU(0.2, inplace=True)
             # state size. (ndf*4) x 8 x 8
-        self.c4 = nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-        self.bn4 = nn.BatchNorm2d(ndf * 8),
-        self.lr4 = nn.LeakyReLU(0.2, inplace=True),
+        self.c4 = nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False)
+        self.bn4 = nn.BatchNorm2d(ndf * 8)
+        self.lr4 = nn.LeakyReLU(0.2, inplace=True)
             # state size. (ndf*8) x 4 x 4
-        self.c5 = nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+        self.c5 = nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False)
         self.sig = nn.Sigmoid()
-        # self.main = nn.Sequential(
-        #     # input is (nc) x 64 x 64
-        #     nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
-        #     nn.LeakyReLU(0.2, inplace=True),
-        #     # state size. (ndf) x 32 x 32
-        #     nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
-        #     nn.BatchNorm2d(ndf * 2),
-        #     nn.LeakyReLU(0.2, inplace=True),
-        #     # state size. (ndf*2) x 16 x 16
-        #     nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
-        #     nn.BatchNorm2d(ndf * 4),
-        #     nn.LeakyReLU(0.2, inplace=True),
-        #     # state size. (ndf*4) x 8 x 8
-        #     nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
-        #     nn.BatchNorm2d(ndf * 8),
-        #     nn.LeakyReLU(0.2, inplace=True),
-        #     # state size. (ndf*8) x 4 x 4
-        #     nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
-        #     nn.Sigmoid()
-        # )
+        self.main = nn.Sequential(
+            # input is (nc) x 64 x 64
+            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf) x 32 x 32
+            nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*2) x 16 x 16
+            nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*4) x 8 x 8
+            nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(ndf * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*8) x 4 x 4
+            nn.Conv2d(ndf * 8, 1, 4, 1, 0, bias=False),
+            nn.Sigmoid()
+        )
 
     def forward(self, x):
-        x1_1 = self.c1(x)
-        x1_2 = self.lr1(x1_1)
-        x2_1 = self.c2(x1_2)
-        x2_2 = self.bn2(x2_1)
-        x2_3 = self.lr2(x2_2)
-        x3_1 = self.c3(x2_3)
-        x3_2 = self.bn3(x3_1)
-        x3_3 = self.lr3(x3_2)
-        x4_1 = self.c4(x3_3)
-        x4_2 = self.bn4(x4_1)
-        x4_3 = self.lr4(x4_2)
-        x5_1 = self.c5(x4_3)
-        x5_2 = self.sig(x5_1)
+        print(type(x))
+        print(x.size())
+        # x1_1 = self.c1(x)
+        # x1_2 = self.lr1(x1_1)
+        # x2_1 = self.c2(x1_2)
+        # x2_2 = self.bn2(x2_1)
+        # x2_3 = self.lr2(x2_2)
+        # x3_1 = self.c3(x2_3)
+        # x3_2 = self.bn3(x3_1)
+        # x3_3 = self.lr3(x3_2)
+        # x4_1 = self.c4(x3_3)
+        # x4_2 = self.bn4(x4_1)
+        # x4_3 = self.lr4(x4_2)
+        # x5_1 = self.c5(x4_3)
+        # x5_2 = self.sig(x5_1)
 
-        return x5_2
+        # return x5_2
+        return self.main(x)
 
 class Self_Attn(nn.Module):
     """ Self attention Layer"""
@@ -176,16 +179,30 @@ class SelfAttention2(nn.Module):
 
 if __name__ == '__main__':
     # Test Generator and Discriminator
+    from PIL import Image
+    from torchvision import transforms
+
+    t = transforms.Compose([
+        transforms.Resize((64, 64)),
+        transforms.ToTensor()
+    ])
+
+    img = Image.open('c:/users/zwj/desktop/2.jpg')
+    _img = torch.unsqueeze(t(img), 0)
+
+    print(_img.size())
+
     # x = torch.randn(128, 100, 1, 1)
     # g = Generator(1, 100, 3, 64)
-    # d = Discriminator(1, 3, 64)
-    # output = g(x)
-    # d_output = d(output)
-    # print(d_output.size())
+    d = Discriminator(1, 3, 64)
+    # output = g(_img)
+    # print(type(output), output.size())
+    d_output = d(_img)
+    print(d_output.size())
     # print(output.size())
 
     # Test self-attention
-    atte = SelfAttention2(512)
-    x = torch.randn(13, 512, 4, 4)
-    o = atte(x)
-    print(o.size())
+    # atte = SelfAttention2(512)
+    # x = torch.randn(13, 512, 4, 4)
+    # o = atte(x)
+    # print(o.size())
