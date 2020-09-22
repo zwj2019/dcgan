@@ -6,6 +6,7 @@ __pycache__/
 
 # Output
 output/
+samples/
 
 # C extensions
 *.so
