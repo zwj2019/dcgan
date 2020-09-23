@@ -27,11 +27,16 @@ cd dcgan
 
 # run module, get more arguments in main.py and model/dcgan.py   
 python main.py --dataroot=path/to/your/dataset
+# Set --attention=simple or --attention=normal to add attetnion layers to DCGAN
+python main.py --dataroot=path/to/your/dataset --attention=simple
 
 # sample, get more arguments in sample.py
+# The attention argument (--attention) should be consistent with the checkpoints
 python sample.py --weights=path/to/your/model/checkpoints
+
 ```
 ## TODO
 - [x] Update requirements
 - [x] Load weights from checkpoint
 - [x] Complete sample.py
+- [x] Add attention options
