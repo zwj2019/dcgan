@@ -21,13 +21,13 @@ class DCGAN(pl.LightningModule):
         self.discriminator = self.init_discriminator()
 
     def init_generator(self):
-        generator = Generator(self.args.nz, self.args.nc, self.args.ngf)
+        generator = Generator(self.args.nz, self.args.nc, self.args.ngf, attention=self.args.attention)
         generator.apply(self.weights_init)
         print(generator)
         return generator
     
     def init_discriminator(self):
-        discriminator = Discriminator(self.args.nc, self.args.ngf)
+        discriminator = Discriminator(self.args.nc, self.args.ngf, attention=self.args.attention)
         discriminator.apply(self.weights_init)
         print(discriminator)
         return discriminator
@@ -117,8 +117,8 @@ class DCGAN(pl.LightningModule):
                         plt.imshow(img_list[i] * 0.5 + 0.5)
                         plt.xticks([])
                         plt.yticks([])
-                    plt.savefig(os.path.join(output_path, 'epoch-%d-batch_idx-%d.jpg' % (self.current_epoch, batch_idx)))
-
+                    plt.savefig(os.path.join(output_path, 'aaattn_epoch-%d-batch_idx-%d.jpg' % (self.current_epoch, batch_idx)))
+                    plt.close()
         return result
 
     def configure_optimizers(self):
@@ -137,6 +137,8 @@ class DCGAN(pl.LightningModule):
         parser.add_argument('--ngf', help="Depth of feature maps carried through the generator", type=int, default=64)
         parser.add_argument('--nz', help="Length of latent vector", type=int, default=100)
         parser.add_argument('--beta1', help="beta1 hyperparameter for Adam optimizers", type=float, default=0.5)
+        parser.add_argument('--attention', help="Type of `attention`", choices=["simple", "normal"] ,type=str, default=None)
+
 
         return parser
     

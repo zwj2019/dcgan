@@ -12,6 +12,7 @@ parser.add_argument('--weights', help="Path to the checkpoints of the Generator"
 parser.add_argument('--samples', help="Path to the sample images", default='samples', type=str)
 parser.add_argument('--num', help="Number of sample images to generate", default=16, type=int)
 parser.add_argument('--ngpu', help="Number of GPU, 0 for CPU", type=int, default=1)
+parser.add_argument('--attention', help="Type of `attention`", choices=["simple", "normal"] ,type=str, default=None)
 
 
 args = parser.parse_args()
