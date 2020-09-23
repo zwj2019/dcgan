@@ -31,7 +31,6 @@ python main.py --dataroot=path/to/your/dataset
 python main.py --dataroot=path/to/your/dataset --attention=simple
 
 # sample, get more arguments in sample.py
-# The attention argument (--attention) should be consistent with the checkpoints
 python sample.py --weights=path/to/your/model/checkpoints
 
 ```
