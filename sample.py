@@ -17,7 +17,8 @@ args = parser.parse_args()
 
 device = 'cuda' if args.ngpu > 0 else 'cpu'
 if not os.path.exists(args.samples):
-    os.mkdir(args.samples)
+    os.makedirs(args.samples)
+    # os.mkdir(args.samples)
 
 model = DCGAN.load_from_checkpoint(args.weights).to(device)
 
