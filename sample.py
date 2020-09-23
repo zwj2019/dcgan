@@ -20,9 +20,7 @@ if not os.path.exists(args.samples):
     os.mkdir(args.samples)
 
 model = DCGAN.load_from_checkpoint(args.weights).to(device)
-print(model.args.attention)
-import sys
-sys.exit(0)
+
 noise = torch.randn(args.num, 100, 1, 1, device=device)
 fake_image = model(noise).detach().cpu()
 
